@@ -1,0 +1,80 @@
+#!/usr/bin/env zsh
+#
+# A theme based on trongrg theme
+#  * RVM/Rbenv info shown on the right
+#  * Git branch info on the left
+#  * Single line prompt
+#
+# Authors:
+# Trong Tran trongrg@gmail.com
+
+function prompt_trongrg_precmd {
+  setopt LOCAL_OPTIONS
+  unsetopt XTRACE KSH_ARRAYS
+
+  # Get Git repository information.
+  if (( $+functions[git-info] )); then
+    git-info on
+    git-info
+  fi
+
+  # Get ruby information
+  if (( $+functions[ruby-info] )); then
+    ruby-info
+  fi
+}
+
+function prompt_trongrg_setup {
+  setopt LOCAL_OPTIONS
+  unsetopt XTRACE KSH_ARRAYS
+  prompt_opts=(cr percent subst)
+
+  autoload -Uz add-zsh-hook
+
+  add-zsh-hook precmd prompt_trongrg_precmd
+
+  # Use extended color pallete if available.
+  if [[ $TERM = *256color* || $TERM = *rxvt* ]]; then
+    __PROMPT_COLORS=(
+      "%F{81}"  # turquoise
+      "%F{166}" # orange
+      "%F{135}" # purple
+      "%F{161}" # hotpink
+      "%F{118}" # limegreen
+    )
+    __GIT_COLORS=(
+      "%F{81}"  # branch
+      "%F{118}" # ahead clean
+      "%F{161}" # behind
+      "%F{133}" # dirty
+      "%F{082}" # unmerged added renamed
+      "%F{160}" # deleted
+      "%F{166}" # modified
+      "%F{136}" # untracked
+    )
+  fi
+
+  # git
+  zstyle ':prezto:module:git:info:keys' format 'prompt' '(%b%A%B%D%C%U)%a%d%m%u%r'
+
+  zstyle ':prezto:module:git:info:branch' format "${__GIT_COLORS[1]}%b%f"
+  zstyle ':prezto:module:git:info:ahead' format "${__GIT_COLORS[2]} ⬆%f"
+  zstyle ':prezto:module:git:info:behind' format "${__GIT_COLORS[3]} ⬇%f"
+  zstyle ':prezto:module:git:info:dirty' format "${__GIT_COLORS[4]} ✘%f"
+  zstyle ':prezto:module:git:info:clean' format "${__GIT_COLORS[2]} ✔%f"
+  zstyle ':prezto:module:git:info:unmerged' format "${__GIT_COLORS[5]} ═%f"
+
+  zstyle ':prezto:module:git:info:added' format "${__GIT_COLORS[5]} ✚%f"
+  zstyle ':prezto:module:git:info:deleted' format "${__GIT_COLORS[6]} ✖%f"
+  zstyle ':prezto:module:git:info:modified' format "${__GIT_COLORS[7]} ✹%f"
+  zstyle ':prezto:module:git:info:untracked' format "${__GIT_COLORS[8]} ✭%f"
+  zstyle ':prezto:module:git:info:renamed' format "${__GIT_COLORS[5]} ➜%f"
+
+  # ruby info (rvm, rbenv)
+  zstyle ':prezto:module:ruby:info:version' format '(%v)'
+
+  PROMPT="${__PROMPT_COLORS[3]}%n%f@${__PROMPT_COLORS[2]}%m%f ${__PROMPT_COLORS[5]}%~%f "'$git_info[prompt]'" $ "
+  RPROMPT='%F{118}${ruby_info[version]}'
+}
+
+prompt_trongrg_setup "$@"
