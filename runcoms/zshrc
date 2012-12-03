@@ -12,3 +12,5 @@ fi
 
 # Customize to your needs...
 
+source ~/.secrets
+PATH="$(brew --prefix josegonzalez/php/php53)/bin:$PATH"
