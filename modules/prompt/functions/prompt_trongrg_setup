@@ -8,13 +8,28 @@
 # Authors:
 # Trong Tran trongrg@gmail.com
 
+pmodload 'helper'
+
+function prompt_trongrg_pwd {
+  local pwd="${PWD/#$HOME/~}"
+
+  if [[ "$pwd" == (#m)[/~] ]]; then
+    _prompt_trongrg_pwd="$MATCH"
+    unset MATCH
+  else
+    _prompt_trongrg_pwd="${${${(@j:/:M)${(@s:/:)pwd}##.#?}:h}%/}/${pwd:t}"
+  fi
+}
+
 function prompt_trongrg_precmd {
   setopt LOCAL_OPTIONS
   unsetopt XTRACE KSH_ARRAYS
 
+  # Format PWD.
+  prompt_trongrg_pwd
+
   # Get Git repository information.
   if (( $+functions[git-info] )); then
-    git-info on
     git-info
   fi
 
@@ -29,30 +44,30 @@ function prompt_trongrg_setup {
   unsetopt XTRACE KSH_ARRAYS
   prompt_opts=(cr percent subst)
 
+  # Load required functions.
   autoload -Uz add-zsh-hook
 
+  # Add hook for calling git-info before each command.
   add-zsh-hook precmd prompt_trongrg_precmd
 
   # Use extended color pallete if available.
-  if [[ $TERM = *256color* || $TERM = *rxvt* ]]; then
-    __PROMPT_COLORS=(
-      "%F{81}"  # turquoise
-      "%F{166}" # orange
-      "%F{135}" # purple
-      "%F{161}" # hotpink
-      "%F{118}" # limegreen
-    )
-    __GIT_COLORS=(
-      "%F{81}"  # branch
-      "%F{118}" # ahead clean
-      "%F{161}" # behind
-      "%F{133}" # dirty
-      "%F{082}" # unmerged added renamed
-      "%F{160}" # deleted
-      "%F{166}" # modified
-      "%F{136}" # untracked
-    )
-  fi
+  __PROMPT_COLORS=(
+    "%F{81}"  # turquoise
+    "%F{166}" # orange
+    "%F{135}" # purple
+    "%F{161}" # hotpink
+    "%F{118}" # limegreen
+  )
+  __GIT_COLORS=(
+    "%F{81}"  # branch
+    "%F{118}" # ahead clean
+    "%F{161}" # behind
+    "%F{133}" # dirty
+    "%F{082}" # unmerged added renamed
+    "%F{160}" # deleted
+    "%F{166}" # modified
+    "%F{136}" # untracked
+  )
 
   # git
   zstyle ':prezto:module:git:info:keys' format 'prompt' '(%b%A%B%D%C%U)%a%d%m%u%r'
@@ -71,11 +86,12 @@ function prompt_trongrg_setup {
   zstyle ':prezto:module:git:info:renamed' format "${__GIT_COLORS[5]} ➜%f"
 
   # ruby info (rvm, rbenv)
-  zstyle ':prezto:module:ruby:info:version' format '(%v)'
+  zstyle ':prezto:module:ruby:info:version' format '%F{blue}[%v]%f'
 
-  PROMPT="${__PROMPT_COLORS[3]}%n%f@${__PROMPT_COLORS[2]}%m%f ${__PROMPT_COLORS[5]}%~%f "'$git_info[prompt]'"
-$ "
-  RPROMPT='%F{118}${ruby_info[version]}'
+  PROMPT='${__PROMPT_COLORS[3]}%n%f@${__PROMPT_COLORS[2]}%m%f ${__PROMPT_COLORS[5]}${_prompt_trongrg_pwd}%f $git_info[prompt]
+$ '
+  RPROMPT='${ruby_info[version]}'
+  SPROMPT='zsh: correct %F{red}%R%f to %F{green}%r%f [nyae]? '
 }
 
 prompt_trongrg_setup "$@"
