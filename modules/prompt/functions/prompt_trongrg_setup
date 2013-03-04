@@ -25,9 +25,6 @@ function prompt_trongrg_precmd {
   setopt LOCAL_OPTIONS
   unsetopt XTRACE KSH_ARRAYS
 
-  # Format PWD.
-  prompt_trongrg_pwd
-
   # Get Git repository information.
   if (( $+functions[git-info] )); then
     git-info
@@ -37,6 +34,49 @@ function prompt_trongrg_precmd {
   if (( $+functions[ruby-info] )); then
     ruby-info
   fi
+
+  # Format PWD.
+  prompt_trongrg_pwd
+
+  local prompt_line_1
+  prompt_trongrg_setup_prompt
+
+  PROMPT="$prompt_line_1$prompt_new_line$prompt_chars "
+  SPROMPT='zsh: correct %F{red}%R%f to %F{green}%r%f [nyae]? '
+}
+
+prompt_trongrg_setup_prompt () {
+  local prompt_line_1a_width=${#${(S%%)prompt_line_1a//(\%([KF1]|)\{*\}|\%[Bbkf])}}
+  local prompt_line_1b_width=${#${(S%%)prompt_line_1b//(\%([KF1]|)\{*\}|\%[Bbkf])}}
+  local git_info_width=${#${(S%%)git_info[prompt]//(\%([KF1]|)\{*\}|\%[Bbkf])}}
+
+  local prompt_padding_size=$(( COLUMNS
+                                  - prompt_line_1a_width
+                                  - prompt_line_1b_width
+                                  - git_info_width
+                                  - 1 ))
+
+  # Try to fit in long path and user@host.
+  if (( prompt_padding_size > 0 )); then
+    local prompt_padding
+    eval "prompt_padding=\${(l:${prompt_padding_size}:: :)_empty_zz}"
+    prompt_line_1="$prompt_line_1a$git_info$prompt_padding$prompt_line_1b"
+    return
+  fi
+
+  prompt_padding_size=$(( COLUMNS - prompt_line_1a_width ))
+
+  # Didn't fit; try to fit in just long path.
+  if (( prompt_padding_size > 0 )); then
+    local prompt_padding
+    eval "prompt_padding=\${(l:${prompt_padding_size}:: :)_empty_zz}"
+    prompt_line_1="$prompt_line_1a$git_info$prompt_padding"
+    return
+  fi
+
+  # Still didn't fit; truncate
+  local prompt_pwd_size=$(( COLUMNS - 5 ))
+  prompt_line_1="$prompt_gfx_tbox$prompt_l_paren%B%F{$prompt_adam2_color2}%$prompt_pwd_size<...<%~%<<$prompt_r_paren%b%F{$prompt_adam2_color1} "
 }
 
 function prompt_trongrg_setup {
@@ -47,10 +87,6 @@ function prompt_trongrg_setup {
   # Load required functions.
   autoload -Uz add-zsh-hook
 
-  # Add hook for calling git-info before each command.
-  add-zsh-hook precmd prompt_trongrg_precmd
-
-  # Use extended color pallete if available.
   __PROMPT_COLORS=(
     "%F{81}"  # turquoise
     "%F{166}" # orange
@@ -58,6 +94,7 @@ function prompt_trongrg_setup {
     "%F{161}" # hotpink
     "%F{118}" # limegreen
   )
+
   __GIT_COLORS=(
     "%F{81}"  # branch
     "%F{118}" # ahead clean
@@ -70,7 +107,7 @@ function prompt_trongrg_setup {
   )
 
   # git
-  zstyle ':prezto:module:git:info:keys' format 'prompt' '(%b%A%B%D%C%U)%a%d%m%u%r'
+  zstyle ':prezto:module:git:info:keys' format 'prompt' '($(coalesce "%b" "%p" "%c")%s%A%B%D%C%U)%a%d%m%u%r'
 
   zstyle ':prezto:module:git:info:branch' format "${__GIT_COLORS[1]}%b%f"
   zstyle ':prezto:module:git:info:ahead' format "${__GIT_COLORS[2]} ⬆%f"
@@ -86,12 +123,16 @@ function prompt_trongrg_setup {
   zstyle ':prezto:module:git:info:renamed' format "${__GIT_COLORS[5]} ➜%f"
 
   # ruby info (rvm, rbenv)
-  zstyle ':prezto:module:ruby:info:version' format '%F{blue}[%v]%f'
+  zstyle ':prezto:module:ruby:info:version' format '[%v]'
 
-  PROMPT='${__PROMPT_COLORS[3]}%n%f@${__PROMPT_COLORS[2]}%m%f ${__PROMPT_COLORS[5]}${_prompt_trongrg_pwd}%f $git_info[prompt]
-$ '
-  RPROMPT='${ruby_info[version]}'
-  SPROMPT='zsh: correct %F{red}%R%f to %F{green}%r%f [nyae]? '
+  prompt_user_host="${__PROMPT_COLORS[3]}%n%f@${__PROMPT_COLORS[2]}%m%f"
+  prompt_pwd="${__PROMPT_COLORS[5]}"'$_prompt_trongrg_pwd'"%f"
+
+  prompt_line_1a="$prompt_user_host $prompt_pwd "
+  prompt_line_1b='%F{blue}$ruby_info[version]%f'
+  prompt_chars=" %B${__PROMPT_COLORS[2]}❯${__PROMPT_COLORS[1]}❯${__PROMPT_COLORS[5]}❯%f%b"
+
+  add-zsh-hook precmd prompt_trongrg_precmd
 }
 
 prompt_trongrg_setup "$@"
