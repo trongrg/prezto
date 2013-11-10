@@ -6,6 +6,7 @@
 #
 
 # Source Prezto.
+PATH=/usr/local/bin:$PATH
 if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
 fi
@@ -13,5 +14,3 @@ fi
 # Customize to your needs...
 for config_file ($HOME/.yadr/zsh/*.zsh) source $config_file
 export CUCUMBER_COLORS='comment=cyan:passed=green:passed_param=green,underscore'
-# PATH="$(brew --prefix josegonzalez/php/php53)/bin:$PATH"
-PATH=/usr/local/bin:$PATH
