@@ -1,27 +1,27 @@
 #!/usr/bin/env zsh
 #
-# A theme based on trongrg theme
+# A theme based on trongrg2 theme
 #  * RVM/Rbenv info shown on the right
 #  * Git branch info on the left
 #  * Single line prompt
 #
 # Authors:
-# Trong Tran trongrg@gmail.com
+# Trong Tran trongrg2@gmail.com
 
 pmodload 'helper'
 
-function prompt_trongrg_pwd {
+function prompt_trongrg2_pwd {
   local pwd="${PWD/#$HOME/~}"
 
   if [[ "$pwd" == (#m)[/~] ]]; then
-    _prompt_trongrg_pwd="$MATCH"
+    _prompt_trongrg2_pwd="$MATCH"
     unset MATCH
   else
-    _prompt_trongrg_pwd="${${${(@j:/:M)${(@s:/:)pwd}##.#?}:h}%/}/${pwd:t}"
+    _prompt_trongrg2_pwd="${${${(@j:/:M)${(@s:/:)pwd}##.#?}:h}%/}/${pwd:t}"
   fi
 }
 
-function prompt_trongrg_precmd {
+function prompt_trongrg2_precmd {
   setopt LOCAL_OPTIONS
   unsetopt XTRACE KSH_ARRAYS
 
@@ -36,16 +36,16 @@ function prompt_trongrg_precmd {
   fi
 
   # Format PWD.
-  prompt_trongrg_pwd
+  prompt_trongrg2_pwd
 
   local prompt_line_1
-  prompt_trongrg_setup_prompt
+  prompt_trongrg2_setup_prompt
 
   PROMPT="$prompt_line_1$prompt_new_line$prompt_chars "
   SPROMPT='zsh: correct %F{red}%R%f to %F{green}%r%f [nyae]? '
 }
 
-prompt_trongrg_setup_prompt () {
+prompt_trongrg2_setup_prompt () {
   local prompt_line_1a_width=${#${(S%%)prompt_line_1a//(\%([KF1]|)\{*\}|\%[Bbkf])}}
   local prompt_line_1b_width=${#${(S%%)prompt_line_1b//(\%([KF1]|)\{*\}|\%[Bbkf])}}
   local git_info_width=${#${(S%%)git_info[prompt]//(\%([KF1]|)\{*\}|\%[Bbkf])}}
@@ -79,7 +79,7 @@ prompt_trongrg_setup_prompt () {
   prompt_line_1="$prompt_gfx_tbox$prompt_l_paren%B%F{$prompt_adam2_color2}%$prompt_pwd_size<...<%~%<<$prompt_r_paren%b%F{$prompt_adam2_color1} "
 }
 
-function prompt_trongrg_setup {
+function prompt_trongrg2_setup {
   setopt LOCAL_OPTIONS
   unsetopt XTRACE KSH_ARRAYS
   prompt_opts=(cr percent subst)
@@ -126,13 +126,13 @@ function prompt_trongrg_setup {
   zstyle ':prezto:module:ruby:info:version' format '[%v]'
 
   prompt_user_host="${__PROMPT_COLORS[3]}%n%f@${__PROMPT_COLORS[2]}%m%f"
-  prompt_pwd="${__PROMPT_COLORS[5]}"'$_prompt_trongrg_pwd'"%f"
+  prompt_pwd="${__PROMPT_COLORS[5]}"'$_prompt_trongrg2_pwd'"%f"
 
   prompt_line_1a="$prompt_user_host $prompt_pwd "
   prompt_line_1b='%F{blue}$ruby_info[version]%f'
   prompt_chars=" %B${__PROMPT_COLORS[2]}❯${__PROMPT_COLORS[1]}❯${__PROMPT_COLORS[5]}❯%f%b"
 
-  add-zsh-hook precmd prompt_trongrg_precmd
+  add-zsh-hook precmd prompt_trongrg2_precmd
 }
 
-prompt_trongrg_setup "$@"
+prompt_trongrg2_setup "$@"
